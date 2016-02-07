@@ -1,4 +1,7 @@
-#Juke-Server
+#RMS
 
-Backend API in Python for Juke
-test8
+Backend API form RMS
+
+##Tech
+Flask
+Mongo
