@@ -2,4 +2,5 @@ venv
 mongo
 venv/
 mongo/
-__pycache__*
+*__pycache__*
+*logs/
