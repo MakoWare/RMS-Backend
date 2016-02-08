@@ -2,4 +2,4 @@ venv
 mongo
 venv/
 mongo/
-__python*
+__pycache__*
