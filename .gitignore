@@ -2,3 +2,4 @@ venv
 mongo
 venv/
 mongo/
+__python*
