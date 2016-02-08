@@ -1,57 +1,42 @@
 from app.DataBase.database import db
+from pymongo import ReturnDocument
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-from flask.ext.restful import reqparse, abort, Resource, fields, marshal_with
+from flask import request
+from flask.ext.restful import abort, Resource, fields, marshal_with
+import datetime
 import json
-
-parser = reqparse.RequestParser()
-parser.add_argument('name', type=str)
 
 class UserResource(Resource):
     def get(self, id):
         user = db.users.find_one({"_id": ObjectId(id)})
         if not user:
-            abort(404, message="User doesn't exist".format(id))
-
-        return json.loads(dumps(user))
-
-    def post(self, id):
-        parsed_args = parser.parse_args()
-        user = users.insert_one()
-        print("Inserted User: ")
-        print(user)
+            abort(404, message="does not exist, or has been soft deleted".format(id))
         return json.loads(dumps(user))
 
     def put(self, id):
-        parsed_args = parser.parse_args()
-        hub = db_session.query(Hub).filter(Hub.id == id).first()
-        if not hub:
-            abort(404, message="Hub doesn't exist".format(id))
-
-        hub.name = parsed_args['name']
-        db_session.add(hub)
-        db_session.commit()
-        return hub.as_dict(), 201
-
+        requestJSON = request.get_json()
+        resourceId = {'_id': ObjectId(id)}
+        updatedUser = db.users.find_one_and_update(resourceId, {"$set": requestJSON}, return_document=ReturnDocument.AFTER)
+        return json.loads(dumps(updatedUser)), 201
 
     def delete(self, id):
-        hub = db_session.query(Hub).filter(Hub.id == id).first()
-        if not hub:
-            abort(404, message="Hub {} doesn't exist".format(id))
-        db_session.delete(hub)
-        db_session.commit()
-        return {}, 204
+        now = datetime.datetime.utcnow()
+        softDelete = {"deletedAt": now}
+        resourceId = {'_id': ObjectId(id)}
+        updatedUser = db.users.find_one_and_update(resourceId, {"$set": softDelete}, return_document=ReturnDocument.AFTER)
+        return json.loads(dumps(updatedUser)), 201
 
+class UserListResource(Resource):
+    def get(self):
+        users = db.users.find_one()
+        return json.loads(dumps(users)), 201
 
-# class HubListResource(Resource):
-#     @marshal_with(hub_fields)
-#     def get(self):
-#         hubs = db_session.query(Hub).all()
-#         return hubs, 201
+    def post(self):
+        requestJSON = request.get_json()
+        createdUserId = db.users.insert_one(requestJSON).inserted_id
+        createdUser = db.users.find_one(createdUserId)
+        print(requestJSON)
+        print(createdUser)
+        return json.loads(dumps(createdUser))
 
-#     def post(self):
-#         parsed_args = parser.parse_args()
-#         hub = Hub(name=parsed_args['name'])
-#         db_session.add(hub)
-#         db_session.commit()
-#         return hub.as_dict(), 201
