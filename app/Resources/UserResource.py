@@ -9,11 +9,10 @@ import json
 
 class UserResource(Resource):
     def get(self, id):
-#        user = db.users.find_one({"_id": ObjectId(id)})
-#        if not user:
-#            abort(404, message="does not exist, or has been soft deleted".format(id))
-#        return json.loads(dumps(user))
-        return "hi der"
+        user = db.users.find_one({"_id": ObjectId(id)})
+        if not user:
+            abort(404, message="does not exist, or has been soft deleted".format(id))
+        return json.loads(dumps(user))
 
     def put(self, id):
         requestJSON = request.get_json()
